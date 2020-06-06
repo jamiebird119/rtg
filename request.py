@@ -1,37 +1,39 @@
 import os
-import pymysql
+import pymongo
 import requests
 import json
-from datetime import datetime
+if os.path.exists('env.py'):
+    import env
 
-response = requests.get(
-    "http://api.sportradar.us/nba/trial/v7/en/games/2019/REG/schedule.json?api_key=qhjbwd99fwtzvpasey7ebj7t")
-# Print the status code of the response.
-data = json.loads(response.content.decode("utf-8"))
-schedule = []
-for i in data["games"]:
-    schedule.append({"id": i["id"],
-                     "home": i["home"]["id"],
-                     "away": i["away"]["id"],
-                     "scheduled": i["scheduled"]})
+api_key = os.environ.get('api_key')
+api_link = "http://api.sportradar.us/nba/trial/v7/en/games/2019/REG/schedule.json?api_key=%s" % api_key
+response = requests.get(api_link)
 
-username = os.getenv('C9_USER')
-connection = pymysql.connect(host='localhost',
-                             user=username,
-                             password='',
-                             db='rtg')
-try:
-    with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+#data = json.loads(response.content.decode("utf-8"))
+#schedule = []
 
-        for i in schedule:
-            id = i["id"]
-            home = i["home"]
-            away = i["away"]
-            date = str.split(i["scheduled"], 'T')
-            date_f = date[0]
-            print (id,home,away,date_f)
-            cursor.execute(
-                f"INSERT INTO Games (`GameId`, `Home_Team_Id`, `Away_Team_Id`, `Scheduled`) Values ('{id}','{home}','{away}','{date_f}')")
-    connection.commit()
-finally:
-    connection.close()
+MONGODB_URI = os.environ.get("MONGO_URI")
+DBS_NAME = 'rtg'
+COLLECTION_NAME = '19schedule'
+
+
+def mongo_connect(url):
+    try:
+        conn = pymongo.MongoClient(url)
+        print("Mongo is connected!")
+        return conn
+    except pymongo.errors.ConnectionFailure as e:
+        print("Could not connect to MongoDb: %s") % e
+
+
+conn = mongo_connect(MONGODB_URI)
+
+
+coll = conn[DBS_NAME][COLLECTION_NAME]
+
+
+documents = coll.find()
+
+
+for doc in documents:
+    print(doc)
