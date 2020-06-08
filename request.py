@@ -42,13 +42,17 @@ def mongo_connect(url):
         print("Could not connect to MongoDb: %s") % e
 
 
-conn = mongo_connect(MONGODB_URI)
-
-
-coll = conn[DBS_NAME][COLLECTION_NAME]
-get_api("9fa5ccde-5716-4b19-985c-147ba9673703")
-
-documents = coll.find()
+def search_schedule(date):
+    conn = mongo_connect(MONGODB_URI)
+    coll = conn[DBS_NAME][COLLECTION_NAME]
+    search = {"date": date}
+    documents = coll.find(search)
+    games = []
+    for doc in documents:
+        games.append({"home": doc["home_team"],
+                      "away": doc["away_team"],
+                      "id": doc["id"]})
+    return games
 
 
 # for doc in documents:
