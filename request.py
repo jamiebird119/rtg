@@ -13,14 +13,16 @@ response = requests.get(api_link)
 #schedule = []
 
 MONGODB_URI = os.environ.get("MONGO_URI")
+MONGODB_GAME_URI = os.environ.get("MONGO_GAME_URI")
 DBS_NAME = 'rtg'
 COLLECTION_NAME = '19schedule'
+GAME_COLLECTION_NAME = 'game_data'
 
 
 def get_api(game_id):
     api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
-    response = requests.get(api_link.format(game_id, api_key))
-    data = json.loads(response.content.decode("utf-8"))
+    response = requests.get(api_link.format(game_id, api_key)).json()
+    data = response
     game_data = []
     game_data.append({"game_id": data["id"],
                       "lead_changes": data["lead_changes"],
@@ -30,7 +32,7 @@ def get_api(game_id):
                                "name": data["away"]["name"]},
                       "raw_data": data
                       })
-    print(game_data)
+    return(game_data)
 
 
 def mongo_connect(url):
@@ -42,6 +44,7 @@ def mongo_connect(url):
         print("Could not connect to MongoDb: %s") % e
 
 
+# Search schedule for games on date and return 2 teams and game id
 def search_schedule(date):
     conn = mongo_connect(MONGODB_URI)
     coll = conn[DBS_NAME][COLLECTION_NAME]
@@ -55,5 +58,31 @@ def search_schedule(date):
     return games
 
 
-# for doc in documents:
-#   print(doc)
+# Search Database for game from id and return game data
+def search_games(id):
+    conn = mongo_connect(MONGODB_GAME_URI)
+    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
+    search = {"id": id}
+    documents = coll.find(search)
+    games = []
+    games.append(documents)
+    return games
+
+
+# Save game data to games_data database
+def save_game_data(data):
+    conn = mongo_connect(MONGODB_GAME_URI)
+    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
+    games = [data]
+    coll.insert({"id": data["id"]},
+                {"lead_changes": data["lead_changes"]},
+                {"home": {
+                 {"score": data["home"]["score"]},
+                 {"name": data["home"]["name"]}}})
+    coll.update({"id": data["id"]},
+                {"$set": {"raw_data": data["raw_data"]}},
+                multi=True)
+    return data
+
+
+get_api("9fa5ccde-5716-4b19-985c-147ba9673703")
