@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %} 
+{% for i in schedule_data %}
+<h2> Games on {{ date }}</h2>
+
+<a href="{{ schedule_data.id }}" >{{ schedule_data.home }} vs {{ schedule_data.away }} </a>
+
+{% endif %}
+{% endblock %}

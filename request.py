@@ -7,7 +7,6 @@ if os.path.exists('env.py'):
 
 api_key = os.environ.get('api_key')
 api_link = "http://api.sportradar.us/nba/trial/v7/en/games/2019/REG/schedule.json?api_key=%s" % api_key
-response = requests.get(api_link)
 
 #data = json.loads(response.content.decode("utf-8"))
 #schedule = []
@@ -70,19 +69,7 @@ def search_games(id):
 
 
 # Save game data to games_data database
-def save_game_data(data):
-    conn = mongo_connect(MONGODB_GAME_URI)
-    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
-    games = [data]
-    coll.insert({"id": data["id"]},
-                {"lead_changes": data["lead_changes"]},
-                {"home": {
-                 {"score": data["home"]["score"]},
-                 {"name": data["home"]["name"]}}})
-    coll.update({"id": data["id"]},
-                {"$set": {"raw_data": data["raw_data"]}},
-                multi=True)
-    return data
 
 
-get_api("9fa5ccde-5716-4b19-985c-147ba9673703")
+
+
