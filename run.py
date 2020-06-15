@@ -1,7 +1,7 @@
 import os
 import json
 import pymongo
-from flask import Flask, render_template, json
+from flask import Flask, render_template, json, request
 import requests
 if os.path.exists('env.py'):
     import env
@@ -31,9 +31,10 @@ def index():
     return render_template("index.html")
 
 
-@app.route('/{date}')
+@app.route('/<date>', methods=["GET", "POST"])
 # Search schedule for games on date and return 2 teams and game id
-def search_schedule(date):
+def search_schedule():
+    date = request.form["date"]
     conn = mongo_connect(MONGODB_URI)
     coll = conn[DBS_NAME][COLLECTION_NAME]
     search = {"date": date}
