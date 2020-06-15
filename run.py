@@ -1,7 +1,7 @@
 import os
 import json
 import pymongo
-from flask import Flask, render_template, json, request
+from flask import Flask, render_template, json, request, redirect
 import requests
 if os.path.exists('env.py'):
     import env
@@ -28,7 +28,7 @@ def mongo_connect(url):
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template("base.html")
 
 
 @app.route('/<date>', methods=["GET", "POST"])
@@ -50,7 +50,7 @@ def search_schedule():
                            )
 
 
-@app.route('/{id}')
+@app.route('/{id}', methods=["GET", "POST"])
 def search_update(id):
     def search_games(id):
         conn = mongo_connect(MONGODB_GAME_URI)
