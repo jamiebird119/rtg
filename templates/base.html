@@ -6,41 +6,36 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Rate That Game</title>
 
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.standalone.min.css"
-      rel="stylesheet"
-    />
+    
+      <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  
   </head>
 
   <body>
     <h1>Rate That Game</h1>
-    <form method="POST">
+    
       <div id="testDIV">
         <div class="container">
-          <div id="pickyDate" name="date"></div>
+        <div id="pickyDate">
+          
         </div>
       </div>
-    </form>
+    
     {% block content %} {% endblock %}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/locales/bootstrap-datepicker.nl.min.js"></script>
-    <script
-      src="https://github.com/jamiebird119/rtg/blob/master/assets/js/script.js"
-      type="text/javascript"
-    ></script>
+      <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+      <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    
     <script>
       $(document).ready(function () {
-        $("#pickyDate").datepicker();
+        $("#pickyDate").datepicker({
+            onSelect: function(dateText) {
+                console.log("Selected date: " + dateText);
+            }
+        })
       });
 
-      var date = $("#pickyDate").datepicker("getDate");
-      $("#pickyDate").datepicker({
-        onSelect: function (dateText, inst) {
-          console.log(dateText);
-        },
-      });
+    
     </script>
   </body>
 </html>

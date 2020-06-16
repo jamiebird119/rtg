@@ -33,7 +33,7 @@ def index():
 
 @app.route('/<date>', methods=["GET", "POST"])
 # Search schedule for games on date and return 2 teams and game id
-def search_schedule():
+def search_schedule(date):
     date = request.form["date"]
     conn = mongo_connect(MONGODB_URI)
     coll = conn[DBS_NAME][COLLECTION_NAME]
@@ -44,10 +44,7 @@ def search_schedule():
         games.append({"home": doc["home_team"],
                       "away": doc["away_team"],
                       "id": doc["id"]})
-    return render_template("date.html",
-                           date=date,
-                           schedule_data=games
-                           )
+    return games
 
 
 @app.route('/{id}', methods=["GET", "POST"])
