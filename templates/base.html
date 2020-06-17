@@ -6,36 +6,37 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Rate That Game</title>
 
-    
-      <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
+    />
   </head>
 
   <body>
     <h1>Rate That Game</h1>
-    
-      <div id="testDIV">
-        <div class="container">
-        <div id="pickyDate">
-          
-        </div>
+
+    <div id="testDIV">
+      <div class="container">
+        <div id="pickyDate"></div>
       </div>
-    
+    </div>
     {% block content %} {% endblock %}
 
-      <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-      <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    
-    <script>
-      $(document).ready(function () {
-        $("#pickyDate").datepicker({
-            onSelect: function(dateText) {
-                console.log("Selected date: " + dateText);
-            }
-        })
-      });
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-    
+    <script>
+            $(document).ready(function () {
+              $("#pickyDate").datepicker({
+                  dateFormat: 'yy-mm-dd',
+                  onSelect: function(dateText) {
+                      url_ = "{{ url_for('search_schedule', date = dateText )}}"
+                  $.ajax({url = url_ ), success: function(result){
+                      console.log(result)
+          }});
+              })
+            });
+      dateFormat: 'dd-mm-yy'
     </script>
   </body>
 </html>

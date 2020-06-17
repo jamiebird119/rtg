@@ -8,8 +8,8 @@ if os.path.exists('env.py'):
 api_key = os.environ.get('api_key')
 api_link = "http://api.sportradar.us/nba/trial/v7/en/games/2019/REG/schedule.json?api_key=%s" % api_key
 
-#data = json.loads(response.content.decode("utf-8"))
-#schedule = []
+# data = json.loads(response.content.decode("utf-8"))
+# schedule = []
 
 MONGODB_URI = os.environ.get("MONGO_URI")
 MONGODB_GAME_URI = os.environ.get("MONGO_GAME_URI")
@@ -68,8 +68,23 @@ def search_games(id):
     return games
 
 
-# Save game data to games_data database
+# Search for schedule and save games
+def get_schedule(api_key, api_link):
+    response = requests.get(api_link.format(api_key)).json()
+    data = response
+    # schedule = []
+    conn = mongo_connect(MONGODB_URI)
+    coll = conn[DBS_NAME][COLLECTION_NAME]
+    for i in data["games"]:
+        date = i["scheduled"].split("T")
+        coll.update_one({"id": i["id"]}, {'$set': {'date': date[0]}})
+        coll.update_one({"id": i["id"]}, {'$set': {'time': date[1]}})
 
+
+def delete_objects():
+    conn = mongo_connect(MONGODB_URI)
+    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
+    coll.delete_many()
 
 
 
