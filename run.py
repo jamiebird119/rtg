@@ -31,41 +31,42 @@ def index():
     return render_template("base.html")
 
 
-@app.route('/<date>', methods=["GET", "POST"])
+@app.route('/search/<date>', methods=["GET", "POST"])
 # Search schedule for games on date and return 2 teams and game id
 def search_schedule(date):
-    date = request.form["date"]
-    conn = mongo_connect(MONGODB_URI)
-    coll = conn[DBS_NAME][COLLECTION_NAME]
-    search = {"date": date}
-    documents = coll.find(search)
-    games = []
-    for doc in documents:
-        games.append({"home": doc["home_team"],
-                      "away": doc["away_team"],
-                      "id": doc["id"]})
-    return games
+    if request.method == 'POST':
+        conn = mongo_connect(MONGODB_URI)
+        coll = conn[DBS_NAME][COLLECTION_NAME]
+        search = {"date": date}
+        documents = coll.find(search)
+        games = []
+        for doc in documents:
+            games.append({"home": doc["home_team"],
+                          "away": doc["away_team"],
+                          "id": doc["id"]})
+        return json.dumps(games)
+    else:
+        not_available = "The data is not available"
+        return not_available
 
 
-@app.route('/{id}', methods=["GET", "POST"])
-def search_update(id):
-    def search_games(id):
+@app.route('/search/<id>', methods=["GET", "POST"])
+def search_games(id):
+    if request.method == 'POST':
         conn = mongo_connect(MONGODB_GAME_URI)
         coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
-        search = {"id": id}
-        documents = coll.find(search)
+        search = {"game_id": id}
+        documents = coll.find_one(search)
         games = []
         games.append(documents)
         # if statement to check if data exists in database - if yes return - if no search api for data and save to database then return
-        if games == []:
-            game_data = get_api(id)
-            save_game_data(game_data)
-            rating = {game_data.lead_changes}
-            return render_template("rating.html",
-                                   rating=rating)
+        if documents != []:
+            return json.dumps(games)
         else:
-            return render_template("rating.html",
-                                   rating=games.lead_changes)
+            return "Nothing to see here"
+            return json.dumps(get_api(id))
+    else:
+        return "The data is not available"
 
 
 if __name__ == '__main__':
@@ -75,26 +76,13 @@ if __name__ == '__main__':
 
 
 def get_api(id):
+    print("getting")
+    conn = mongo_connect(MONGODB_GAME_URI)
+    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
     api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
     response = requests.get(api_link.format(id, api_key)).json()
     data = response
-    game_data = []
-    game_data.append({"game_id": data["id"],
-                      "lead_changes": data["lead_changes"],
-                      "home": {"score": data["home"]["points"],
-                               "name": data["home"]["name"]},
-                      "away": {"score": data["away"]["points"],
-                               "name": data["away"]["name"]},
-                      "raw_data": data
-                      })
-    return(game_data)
-
-
-def save_game_data(data):
-    conn = mongo_connect(MONGODB_GAME_URI)
-    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
-    games = [data]
-    coll.insert({"id": data["id"]},
+    coll.insert({"game_id": data["id"]},
                 {"lead_changes": data["lead_changes"]},
                 {"home": {
                  {"score": data["home"]["score"]},

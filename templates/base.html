@@ -20,23 +20,63 @@
         <div id="pickyDate"></div>
       </div>
     </div>
+    <div id="results"></div>
     {% block content %} {% endblock %}
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script>
-            $(document).ready(function () {
-              $("#pickyDate").datepicker({
-                  dateFormat: 'yy-mm-dd',
-                  onSelect: function(dateText) {
-                      url_ = "{{ url_for('search_schedule', date = dateText )}}"
-                  $.ajax({url = url_ ), success: function(result){
-                      console.log(result)
-          }});
-              })
+      $(document).ready(function () {
+        $("#pickyDate").datepicker({
+          dateFormat: "yy-mm-dd",
+          onSelect: function (dateText) {
+            urlFor = '{{ url_for("search_schedule", date="fakeDate") }}'.replace(
+              "fakeDate",
+              dateText
+            );
+            $.ajax({
+              type: "POST",
+              url: urlFor,
+              success: function (result) {
+                data = JSON.parse(result);
+                write = "";
+                for (i in data) {
+                  write += `<h3> ${data[i]["home"]} vs ${data[i]["away"]}
+            </h3>
+            <button onclick="rate_game('${data[i]["id"]}')"> Rate That Game! </button>
+            <div id=${data[i]["id"]}></div>
+            `;
+                }
+                document.getElementById("results").innerHTML = write;
+              },
+              error: function (error) {
+                console.log(error);
+              },
             });
-      dateFormat: 'dd-mm-yy'
+          },
+        });
+      });
+      
+      function rate_game(id) {
+        console.log("running")
+        url_game = '{{ url_for("search_games", id="fakeId") }}'.replace(
+          "fakeId",
+          id
+        );
+        $.ajax({
+          type: "POST",
+          url: url_game,
+          success: function (result) {
+            game_data = JSON.parse(result);
+            console.log(result)
+            console.log(game_data)
+          },
+          error: function (error) {
+            console.log(error);
+          },
+        });
+      }
     </script>
   </body>
 </html>
