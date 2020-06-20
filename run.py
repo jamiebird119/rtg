@@ -59,12 +59,31 @@ def search_games(id):
         documents = coll.find_one(search)
         games = []
         games.append(documents)
-        # if statement to check if data exists in database - if yes return - if no search api for data and save to database then return
-        if documents != []:
-            return json.dumps(games)
-        else:
-            return "Nothing to see here"
-            return json.dumps(get_api(id))
+        return games
+    else:
+        return "The data is not available"
+
+
+@app.route('/get/<id>', methods=["GET", "POST"])
+def get_api(id):
+    if request.method == "GET":
+        conn = mongo_connect(MONGODB_GAME_URI)
+        coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
+        api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
+        response = requests.get(api_link.format(id, api_key)).json()
+        data = {}
+        data.update(
+            ({"game_id": response["id"],
+              "lead_changes": response["lead_changes"],
+              "home": {"score": response["home"]["points"],
+                       "name": response["home"]["name"]},
+              "away": {"score": response["away"]["points"],
+                       "name": response["away"]["name"]},
+              "raw_data": response
+              })
+        )
+        # coll.insert(data)
+        return data
     else:
         return "The data is not available"
 
@@ -73,21 +92,3 @@ if __name__ == '__main__':
     app.run(host=os.environ.get('IP'),
             port=int(os.environ.get('PORT')),
             debug=True)
-
-
-def get_api(id):
-    print("getting")
-    conn = mongo_connect(MONGODB_GAME_URI)
-    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
-    api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
-    response = requests.get(api_link.format(id, api_key)).json()
-    data = response
-    coll.insert({"game_id": data["id"]},
-                {"lead_changes": data["lead_changes"]},
-                {"home": {
-                 {"score": data["home"]["score"]},
-                 {"name": data["home"]["name"]}}})
-    coll.update({"id": data["id"]},
-                {"$set": {"raw_data": data["raw_data"]}},
-                multi=True)
-    return data

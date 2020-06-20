@@ -22,7 +22,7 @@ def get_api(game_id):
     api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
     response = requests.get(api_link.format(game_id, api_key)).json()
     data = response
-    game_data = []
+    game_data = {}
     game_data.append({"game_id": data["id"],
                       "lead_changes": data["lead_changes"],
                       "home": {"score": data["home"]["points"],
@@ -61,11 +61,11 @@ def search_schedule(date):
 def search_games(id):
     conn = mongo_connect(MONGODB_GAME_URI)
     coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
-    search = {"id": id}
-    documents = coll.find(search)
+    search = {"game_id": id}
+    documents = coll.find_one(search)
     games = []
     games.append(documents)
-    return games
+    print(games)
 
 
 # Search for schedule and save games
@@ -87,4 +87,4 @@ def delete_objects():
     coll.delete_many()
 
 
-
+search_games("6d7949d6-ab47-42df-91f5-96f20459e056")
