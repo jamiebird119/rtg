@@ -64,8 +64,10 @@ def search_games(id):
     search = {"game_id": id}
     documents = coll.find_one(search)
     games = []
-    games.append(documents)
-    print(games)
+    games.append({"home": documents["home"]["score"],
+                  "away": documents["away"]["score"],
+                  "lead_changes": documents["lead_changes"]})
+    print(json.dumps(games))
 
 
 # Search for schedule and save games

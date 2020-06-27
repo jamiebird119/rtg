@@ -31,7 +31,7 @@ def index():
     return render_template("base.html")
 
 
-@app.route('/search/<date>', methods=["GET", "POST"])
+@app.route('/search_by_date/<date>', methods=["GET", "POST"])
 # Search schedule for games on date and return 2 teams and game id
 def search_schedule(date):
     if request.method == 'POST':
@@ -46,32 +46,35 @@ def search_schedule(date):
                           "id": doc["id"]})
         return json.dumps(games)
     else:
+        print("1")
         not_available = "The data is not available"
         return not_available
 
 
-@app.route('/search/<id>', methods=["GET", "POST"])
+@app.route('/search_by_id/<id>', methods=["GET", "POST"])
 def search_games(id):
     if request.method == 'POST':
+        print("2")
         conn = mongo_connect(MONGODB_GAME_URI)
         coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
         search = {"game_id": id}
         documents = coll.find_one(search)
-        games = []
-        games.append(documents)
-        return games
+        data = {"home": documents["home"]["score"],
+                "away": documents["away"]["score"],
+                "lead_changes": documents["lead_changes"]}
+        return json.dumps(data)
     else:
         return "The data is not available"
 
 
-@app.route('/get/<id>', methods=["GET", "POST"])
+@ app.route('/get/<id>', methods=["GET", "POST"])
 def get_api(id):
-    if request.method == "GET":
+    if request.method == "POST":
         conn = mongo_connect(MONGODB_GAME_URI)
         coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
         api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
         response = requests.get(api_link.format(id, api_key)).json()
-        data = {}
+        data = []
         data.update(
             ({"game_id": response["id"],
               "lead_changes": response["lead_changes"],
