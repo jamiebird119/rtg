@@ -13,9 +13,11 @@ api_link = "http://api.sportradar.us/nba/trial/v7/en/games/2019/REG/schedule.jso
 
 MONGODB_URI = os.environ.get("MONGO_URI")
 MONGODB_GAME_URI = os.environ.get("MONGO_GAME_URI")
+MONGO_RATING_URI = os.environ.get("MONGO_RATING_URI")
 DBS_NAME = 'rtg'
 COLLECTION_NAME = '19schedule'
 GAME_COLLECTION_NAME = 'game_data'
+RATING_COLLECTION = 'rating'
 
 
 def get_api(game_id):
@@ -84,9 +86,21 @@ def get_schedule(api_key, api_link):
 
 
 def delete_objects():
-    conn = mongo_connect(MONGODB_URI)
+    conn = mongo_connect(MONGODB_GAME_URI)
     coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
     coll.delete_many()
 
 
-search_games("6d7949d6-ab47-42df-91f5-96f20459e056")
+def get_ids():
+    conn = mongo_connect(MONGODB_GAME_URI)
+    coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
+    documents = coll.find()
+    ratings = []
+    for i in documents:
+        rating = (0.015 * (i["home"]["score"] + i["away"]["score"]) + 0.01 * abs(i["home"]["score"] - i["away"]["score"]) + 0.06 * i["lead_changes"])
+        id = i["game_id"]
+        ratings.append({"id": id, "rating": rating})
+    con2 = mongo_connect(MONGO_RATING_URI)
+    col2 = con2[DBS_NAME][RATING_COLLECTION]
+    for i in ratings:
+        col2.insert_one(i)

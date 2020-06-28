@@ -1,10 +1,18 @@
-{% extends 'base.html' %}
-{% block content %} 
-<h2> Games on {{ date }}</h2>
-{% for i in schedule_data %}
+{% extends 'base.html' %} {% block content %}
+<h2>Games on {{ date }}</h2>
+{% for i in data %}
+<div class="row">
+  <div class="col">
+    <h4>{{ i.home }} vs {{ i.away }}</h4>
+  </div>
+</div>
+<div class="row">
+  <div class="col s6">
+    <button class="btn waves-effect waves-light" onclick="rate_game('{{ i.id }}')">Rate That Game! <i class="material-icons right">send</i></button>
+  </div>
+  <div class="col s4">
+    <div id="{{i.id}}"></div>
+  </div>
+</div>
 
-
-<a href="{{ schedule_data.id }}" >{{ schedule_data.home }} vs {{ schedule_data.away }} </a>
-
-{% endif %}
-{% endblock %}
+{% endfor %} {% endblock %}

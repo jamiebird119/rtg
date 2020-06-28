@@ -10,6 +10,14 @@
       rel="stylesheet"
       href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
     />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
   </head>
 
   <body>
@@ -20,9 +28,10 @@
         <div id="pickyDate"></div>
       </div>
     </div>
-    <div id="results"></div>
-    {% block content %} {% endblock %}
-
+    <div class="container">
+      {% block content %} {% endblock %}
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -35,25 +44,7 @@
               "fakeDate",
               dateText
             );
-            $.ajax({
-              type: "POST",
-              url: urlFor,
-              success: function (result) {
-                data = JSON.parse(result);
-                write = "";
-                for (i in data) {
-                  write += `<h3> ${data[i]["home"]} vs ${data[i]["away"]}
-            </h3>
-            <button onclick="rate_game('${data[i]["id"]}')"> Rate That Game! </button>
-            <div id=${data[i]["id"]}></div>
-            `;
-                }
-                document.getElementById("results").innerHTML = write;
-              },
-              error: function (error) {
-                console.log(error);
-              },
-            });
+            location.assign(urlFor);
           },
         });
       });
@@ -63,38 +54,23 @@
           "fakeId",
           id
         );
-        
+
         $.ajax({
           type: "POST",
           url: url_game_search,
-          dataType:"JSON",
-          success: (function(result){
-            data = result
-            if (data.length <= 2){
-                console.log("too short")
-            }
-            else{
-                console.log(data)
-            }
-        })
-         })
+          dataType: "JSON",
+          success: function (result) {
+            data = result;
+            var el = document.getElementById(id);
+            var rating = Number(
+              0.015 * (data["home"] + data["away"]) +
+                0.01 * Math.abs(data["home"] - data["away"]) +
+                0.06 * data["lead_changes"]
+            );
+            el.innerHTML = `<h5> ${rating} </h5>`;
+          },
+        });
       }
-        function get_api_data(id){
-            url_game_get = '{{ url_for("get_api", id="fakeId") }}'.replace("fakeId", id);
-
-            
-            $.ajax({
-                type: "POST",
-                url: url_game_get,
-                success: function (new_result) {
-                    game_data = new_result;
-                    console.log(game_data)
-                },
-                error: function(error){
-                    console.log(error)
-                }
-                });
-        }
     </script>
   </body>
 </html>
