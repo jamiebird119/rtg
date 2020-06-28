@@ -1,9 +1,22 @@
 {% extends 'base.html' %} {% block content %}
+<div class="row">
+  <div class="col s12">
+    <div id="testDIV">
+      <div class="container">
+        <div id="pickyDate"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <h2>Games on {{ date }}</h2>
+{% if data|length == 0 %}
+    <h4> Sorry<strong> :( </strong> There do not appear to be any games on that date <h4>
+{% endif %}
 {% for i in data %}
 <div class="row">
   <div class="col">
     <h4>{{ i.home }} vs {{ i.away }}</h4>
+    
   </div>
 </div>
 <div class="row">

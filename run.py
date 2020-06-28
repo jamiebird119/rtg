@@ -31,7 +31,20 @@ def mongo_connect(url):
 
 @app.route('/')
 def index():
-    return render_template("base.html")
+    conn = mongo_connect(MONGODB_URI)
+    con3 = mongo_connect(MONGO_RATING_URI)
+    col = conn[DBS_NAME][COLLECTION_NAME]
+    col3 = con3[DBS_NAME][RATING_COLLECTION]
+    docs = col3.find(sort=[("rating", pymongo.DESCENDING)], limit=10)
+    top_ten = []
+    for i in docs:
+        game = col.find({"id": i["id"]})
+        for thing in game:
+            top_ten.append({"rating": i["rating"],
+                            "date": thing["date"],
+                            "home": thing["home_team"],
+                            "away": thing["away_team"]})
+    return render_template("index.html", topTen=top_ten)
 
 
 @app.route('/search_by_date/<date>', methods=["GET", "POST"])
@@ -80,7 +93,8 @@ def search_games(id):
                   "raw_data": response
                   })
             )
-            rating = (0.015 * (response["home"]["points"] + response["away"]["points"]) + 0.01 * abs(response["home"]["points"] - response["away"]["points"]) + 0.06 * response["lead_changes"])
+            rating = (0.015 * (response["home"]["points"] + response["away"]["points"]) + 0.01 * abs(
+                response["home"]["points"] - response["away"]["points"]) + 0.06 * response["lead_changes"])
             coll.insert(data)
             col2.insert_one({"rating": rating, "id": id})
 

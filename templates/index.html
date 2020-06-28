@@ -1,0 +1,25 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="row">
+  <div class="col s12">
+    <div id="testDIV">
+      <div class="container">
+        <div id="pickyDate"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2>Top Ten Rated Games</h2>
+
+<div class="row">
+  <div class="col s8">
+    {% for i in topTen %}
+    <p>
+      {{i.away }} at {{ i.home }} on {{ i.date }} -
+      <strong> RATED {{ i.rating }} </strong>
+    </p>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
