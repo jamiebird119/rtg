@@ -95,12 +95,13 @@
           success: function (result) {
             data = result;
             var el = document.getElementById(id);
-            var rating = Number(
+            var rating = Math.round(Number(
               0.015 * (data["home"] + data["away"]) +
                 0.01 * Math.abs(data["home"] - data["away"]) +
                 0.06 * data["lead_changes"]
-            );
-            el.innerHTML = `<h5> ${rating} </h5>`;
+            ));
+            rating_url = "{{url_for('static', filename='assets/rating.png')}}".replace("rating",rating)
+            el.innerHTML = `<img class="ratings" src=`+ rating_url + `/>  `;
           },
         });
       }
