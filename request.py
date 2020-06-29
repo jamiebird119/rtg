@@ -97,10 +97,15 @@ def get_ids():
     documents = coll.find()
     ratings = []
     for i in documents:
-        rating = (0.015 * (i["home"]["score"] + i["away"]["score"]) + 0.01 * abs(i["home"]["score"] - i["away"]["score"]) + 0.06 * i["lead_changes"])
+        rating = ((0.015 * (i["home"]["score"] + i["away"]["score"])) - (0.1 * abs(i["home"]["score"] - i["away"]["score"])) + (0.06 * i["lead_changes"]))
         id = i["game_id"]
         ratings.append({"id": id, "rating": rating})
     con2 = mongo_connect(MONGO_RATING_URI)
     col2 = con2[DBS_NAME][RATING_COLLECTION]
     for i in ratings:
-        col2.insert_one(i)
+        col2.update_one({"id": i["id"]}, {"$set": {"rating": i["rating"]}})
+
+
+get_ids()
+
+

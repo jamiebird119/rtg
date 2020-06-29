@@ -29,6 +29,7 @@ def mongo_connect(url):
         print("Could not connect to MongoDb: %s") % e
 
 
+# Home Page with datepicker and top ten games rated 
 @app.route('/')
 def index():
     conn = mongo_connect(MONGODB_URI)
@@ -45,6 +46,16 @@ def index():
                             "home": thing["home_team"],
                             "away": thing["away_team"]})
     return render_template("index.html", topTen=top_ten)
+
+
+@app.route('/about')
+def about():
+    return render_template("about.html")
+
+
+@app.route('/contact')
+def contact():
+    return render_template("contact.html")
 
 
 @app.route('/search_by_date/<date>', methods=["GET", "POST"])
@@ -64,6 +75,7 @@ def search_schedule(date):
     return render_template("date.html", date=newformat, data=games)
 
 
+# Search database for game data. If not found retrieve from API and save to database
 @app.route('/search_by_id/<id>', methods=["GET", "POST"])
 def search_games(id):
     if request.method == 'POST':
@@ -93,8 +105,7 @@ def search_games(id):
                   "raw_data": response
                   })
             )
-            rating = (0.015 * (response["home"]["points"] + response["away"]["points"]) + 0.01 * abs(
-                response["home"]["points"] - response["away"]["points"]) + 0.06 * response["lead_changes"])
+            rating = ((0.015 * (response["home"]["points"] + response["away"]["points"])) - (0.01 * abs(response["home"]["points"] - response["away"]["points"])) + (0.06 * response["lead_changes"]))
             coll.insert(data)
             col2.insert_one({"rating": rating, "id": id})
 
@@ -102,30 +113,6 @@ def search_games(id):
                           "away": response["away"]["points"],
                           "lead_changes": response["lead_changes"]}
             return json.dumps(from_saved)
-    else:
-        return "The data is not available"
-
-
-@ app.route('/get/<id>', methods=["GET", "POST"])
-def get_api(id):
-    if request.method == "POST":
-        conn = mongo_connect(MONGODB_GAME_URI)
-        coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
-        api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
-        response = requests.get(api_link.format(id, api_key)).json()
-        data = []
-        data.update(
-            ({"game_id": response["id"],
-              "lead_changes": response["lead_changes"],
-              "home": {"score": response["home"]["points"],
-                       "name": response["home"]["name"]},
-              "away": {"score": response["away"]["points"],
-                       "name": response["away"]["name"]},
-              "raw_data": response
-              })
-        )
-        # coll.insert(data)
-        return data
     else:
         return "The data is not available"
 

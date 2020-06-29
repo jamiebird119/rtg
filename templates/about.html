@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block content %}
+<h3> About Rate That Game </h3>
+<h5> Ever watch a basketball game that on paper should have been amazing, but in reality didn't thrill you? The two teams are evenly
+matched, but one just doesn't really turn up and it's a blow out! </h5>
+<div class="container">
+  <img src="{{ url_for('static', filename='assets/swaggy.webp') }}" />
+</div>
+<h5> With RATETHATGAME you'll never have to sit through a boring game again. We rate basketball games on how fun they are to watch 
+meaning you can see what will be most entertaining without looking at the score!</h5>
+<h4> <strong> So what are you waiting for? </strong></h4>
+<div class="container">
+  <img src="{{ url_for('static', filename='assets/200w.webp') }}" />
+</div>
+{% endblock %}
