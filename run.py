@@ -29,7 +29,7 @@ def mongo_connect(url):
         print("Could not connect to MongoDb: %s") % e
 
 
-# Home Page with datepicker and top ten games rated 
+# Home Page with datepicker and top ten games rated
 @app.route('/')
 def index():
     conn = mongo_connect(MONGODB_URI)
@@ -41,7 +41,9 @@ def index():
     for i in docs:
         game = col.find({"id": i["id"]})
         for thing in game:
-            top_ten.append({"rating": i["rating"],
+            url = "{{url_for('static', filename='assets/rating.png')}}".replace(
+                "rating", str(round(i["rating"])))
+            top_ten.append({"rating": url,
                             "date": thing["date"],
                             "home": thing["home_team"],
                             "away": thing["away_team"]})
@@ -79,7 +81,6 @@ def search_schedule(date):
 @app.route('/search_by_id/<id>', methods=["GET", "POST"])
 def search_games(id):
     if request.method == 'POST':
-        print("2")
         conn = mongo_connect(MONGODB_GAME_URI)
         coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
         con2 = mongo_connect(MONGO_RATING_URI)
@@ -87,32 +88,34 @@ def search_games(id):
         search = {"game_id": id}
         documents = coll.find_one(search)
         if documents:
-            search_data = {"home": documents["home"]["score"],
-                           "away": documents["away"]["score"],
-                           "lead_changes": documents["lead_changes"]}
-            return json.dumps(search_data)
+            rating = ((0.015 * (documents["home"]["score"] + documents["away"]["score"])) - (0.01 * abs(
+                documents["home"]["score"] - documents["away"]["score"])) + (0.06 * documents["lead_changes"]))
+            return json.dumps([{"rating" : rating}])
         else:
             api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
             response = requests.get(api_link.format(id, api_key)).json()
             data = []
-            data.append(
-                ({"game_id": response["id"],
-                  "lead_changes": response["lead_changes"],
-                  "home": {"score": response["home"]["points"],
-                           "name": response["home"]["name"]},
-                  "away": {"score": response["away"]["points"],
-                           "name": response["away"]["name"]},
-                  "raw_data": response
-                  })
-            )
-            rating = ((0.015 * (response["home"]["points"] + response["away"]["points"])) - (0.01 * abs(response["home"]["points"] - response["away"]["points"])) + (0.06 * response["lead_changes"]))
-            coll.insert(data)
-            col2.insert_one({"rating": rating, "id": id})
+            if response["status"] == "closed":
+                print("closed")
+                data.append(
+                    ({"game_id": response["id"],
+                      "lead_changes": response["lead_changes"],
+                      "home": {"score": response["home"]["points"],
+                               "name": response["home"]["name"]},
+                      "away": {"score": response["away"]["points"],
+                               "name": response["away"]["name"]},
+                      "raw_data": response
+                      })
+                )
+                rating = ((0.015 * (response["home"]["score"] + response["away"]["score"])) - (0.01 * abs(
+                response["home"]["score"] - response["away"]["score"])) + (0.06 * response["lead_changes"]))
+                coll.insert(data)
+                col2.insert_one({"rating": rating, "id": id})
 
-            from_saved = {"home": response["home"]["points"],
-                          "away": response["away"]["points"],
-                          "lead_changes": response["lead_changes"]}
-            return json.dumps(from_saved)
+                return json.dumps([{"rating": rating}])
+            else: 
+                print("Cancelled")
+                return json.dumps([{"rating": "Game Cancelled"}])
     else:
         return "The data is not available"
 

@@ -61,15 +61,44 @@ def search_schedule(date):
 
 # Search Database for game from id and return game data
 def search_games(id):
+
+    print("2")
     conn = mongo_connect(MONGODB_GAME_URI)
     coll = conn[DBS_NAME][GAME_COLLECTION_NAME]
+    con2 = mongo_connect(MONGO_RATING_URI)
+    col2 = con2[DBS_NAME][RATING_COLLECTION]
     search = {"game_id": id}
     documents = coll.find_one(search)
-    games = []
-    games.append({"home": documents["home"]["score"],
-                  "away": documents["away"]["score"],
-                  "lead_changes": documents["lead_changes"]})
-    print(json.dumps(games))
+    if documents:
+        search_data = {"home": documents["home"]["score"],
+                       "away": documents["away"]["score"],
+                       "lead_changes": documents["lead_changes"]}
+        print(search_data)
+        return json.dumps(search_data)
+    else:
+        api_link = "https://api.sportradar.us/nba/trial/v7/en/games/{}/boxscore.json?api_key={}"
+        response = requests.get(api_link.format(id, api_key)).json()
+        data = []
+        print(response)
+        data.append(
+            ({"game_id": response["id"],
+              "lead_changes": response["lead_changes"],
+              "home": {"score": response["home"]["points"],
+                       "name": response["home"]["name"]},
+              "away": {"score": response["away"]["points"],
+                       "name": response["away"]["name"]},
+              "raw_data": response
+              })
+        )
+        rating = ((0.015 * (response["home"]["points"] + response["away"]["points"])) - (0.01 * abs(
+            response["home"]["points"] - response["away"]["points"])) + (0.06 * response["lead_changes"]))
+        coll.insert(data)
+        col2.insert_one({"rating": rating, "id": id})
+
+        from_saved = {"home": response["home"]["points"],
+                      "away": response["away"]["points"],
+                      "lead_changes": response["lead_changes"]}
+        return json.dumps(from_saved)
 
 
 # Search for schedule and save games
@@ -97,7 +126,8 @@ def get_ids():
     documents = coll.find()
     ratings = []
     for i in documents:
-        rating = ((0.015 * (i["home"]["score"] + i["away"]["score"])) - (0.1 * abs(i["home"]["score"] - i["away"]["score"])) + (0.06 * i["lead_changes"]))
+        rating = ((0.015 * (i["home"]["score"] + i["away"]["score"])) - (0.1 * abs(
+            i["home"]["score"] - i["away"]["score"])) + (0.06 * i["lead_changes"]))
         id = i["game_id"]
         ratings.append({"id": id, "rating": rating})
     con2 = mongo_connect(MONGO_RATING_URI)
@@ -106,6 +136,4 @@ def get_ids():
         col2.update_one({"id": i["id"]}, {"$set": {"rating": i["rating"]}})
 
 
-get_ids()
-
-
+search_games("5b02025d-33e3-46d4-9251-2ee40753e891")

@@ -16,8 +16,9 @@
     {% for i in topTen %}
     <p>
       {{i.away }} at {{ i.home }} on {{ i.date }} -
-      <strong> RATED {{ i.rating }} </strong>
+       
     </p>
+    <img src="{{ i.rating }}"/>
     {% endfor %}
   </div>
 </div>
