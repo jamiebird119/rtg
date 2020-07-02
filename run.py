@@ -41,10 +41,13 @@ def index():
     for i in docs:
         game = col.find({"id": i["id"]})
         for thing in game:
-            url = "{{url_for('static', filename='assets/rating.png')}}".replace(
+            url = "/static/assets/rating.png".replace(
                 "rating", str(round(i["rating"])))
+            date_string = thing["date"]
+            date_obj = datetime.strptime(date_string, "%Y-%m-%d")
+            date = date_obj.strftime("%d %b %Y")
             top_ten.append({"rating": url,
-                            "date": thing["date"],
+                            "date": date,
                             "home": thing["home_team"],
                             "away": thing["away_team"]})
     return render_template("index.html", topTen=top_ten)

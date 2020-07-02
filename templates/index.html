@@ -11,17 +11,25 @@
 </div>
 <h2>Top Ten Rated Games</h2>
 
-<div class="row">
-  <div class="col s8">
+
+  
     {% for i in topTen %}
-    <p>
-      {{i.away }} at {{ i.home }} on {{ i.date }} -
+    <div class="row">
+    <div class="col s6 top-ten">
+    <h5>
+      {{i.away }} at {{ i.home }} on <br/> {{ i.date }} 
        
-    </p>
-    <img src="{{ i.rating }}"/>
+    </h5>
+    </div>
+    <div class="col s6">
+    <img src="{{i.rating}}"/>
+    </div>
+    <div class="col s12 divider"></div>
+    </div>
+    
     {% endfor %}
-  </div>
-</div>
+  
+
 
 
 {% endblock %}
