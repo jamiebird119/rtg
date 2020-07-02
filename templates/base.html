@@ -103,7 +103,7 @@
             else{
             var rating = Math.round(data[0]["rating"])
             rating_url = "{{url_for('static', filename='assets/rating.png')}}".replace("rating",rating)
-            el.innerHTML = `<img class="ratings" src=`+ rating_url + `/>  `;
+            el.innerHTML = `<img class="responsive-img ratings" src=`+ rating_url + `/>  `;
             };
           },
         });

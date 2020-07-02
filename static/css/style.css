@@ -4,8 +4,8 @@
   display:contain;
 }
 
-.game{
-    height:150;
+.game button{
+    margin: 4.1rem auto;
 }
 
 .top-ten{

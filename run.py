@@ -76,7 +76,7 @@ def search_schedule(date):
                       "away": doc["away_team"],
                       "id": doc["id"]})
     datetimeobject = datetime.strptime(date, '%Y-%m-%d')
-    newformat = datetimeobject.strftime('%d/%m/%Y')
+    newformat = datetimeobject.strftime('%a %d %b %Y')
     return render_template("date.html", date=newformat, data=games)
 
 
