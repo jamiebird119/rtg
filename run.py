@@ -1,7 +1,7 @@
 import os
 import json
 import pymongo
-from flask import Flask, render_template, json, request, redirect
+from flask import Flask, render_template, json, requests, redirect
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from datetime import datetime
