@@ -33,7 +33,7 @@
       </div>
     </nav>
 <div class="row">
-  <h2>Rate That Game</h2>
+  <h2 class="heading">Rate That Game</h2>
 </div>
     <div class="container">
       {% block content %} {% endblock %}
@@ -96,7 +96,7 @@
             data = result;
             var el = document.getElementById(id);
             console.log(result)
-            if (data[0]["rating"] == "Game Cancelled"){
+            if (data[0]["rating"] == "Not Available/Not played"){
                 el.innerHTML = `<strong> <span>` + data[0]["rating"] +` :( </span> </strong>`
 
             }
@@ -109,5 +109,23 @@
         });
       }
     </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@2.3.2/dist/email.min.js"></script>
+<script type="text/javascript">
+   (function(){
+      emailjs.init("user_5EZSkDLP3C5SHi2nuzTfw");
+   })();
+</script>
+<script type="text/javascript">
+     // Change to your service ID, or keep using the default service
+ var template_params = {
+   "reply_to": "reply_to_value",
+   "from_name": "from_name_value",
+   "message_html": "message_html_value"
+}
+
+var service_id = "default_service";
+var template_id = "template_LYsBkwyA";
+emailjs.send(service_id, template_id, template_params);
+</script>
   </body>
 </html>

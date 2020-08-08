@@ -15,7 +15,7 @@ MONGODB_URI = os.environ.get("MONGO_URI")
 MONGODB_GAME_URI = os.environ.get("MONGO_GAME_URI")
 MONGO_RATING_URI = os.environ.get("MONGO_RATING_URI")
 DBS_NAME = 'rtg'
-COLLECTION_NAME = '19schedule'
+COLLECTION_NAME = 'schedule'
 GAME_COLLECTION_NAME = 'game_data'
 RATING_COLLECTION = 'rating'
 
@@ -43,6 +43,27 @@ def mongo_connect(url):
         return conn
     except pymongo.errors.ConnectionFailure as e:
         print("Could not connect to MongoDb: %s") % e
+
+
+# Get schedule
+def get_schedule():
+    link = "http://api.sportradar.us/nba/trial/v7/en/games/2019/REG/schedule.json?api_key=qhjbwd99fwtzvpasey7ebj7t"
+    conn = mongo_connect(MONGODB_URI)
+    coll = conn[DBS_NAME][COLLECTION_NAME]
+    response = requests.get(link).json()
+    schedule = response
+    for doc in schedule["games"]:
+        game = {"id": doc["id"],
+                "home_team": doc["home"]["name"],
+                "home_short": doc["home"]["alias"],
+                "away_team": doc["away"]["name"],
+                "away_short": doc["away"]["alias"],
+                "date": doc["scheduled"].split("T")[0],
+                "time": doc["scheduled"].split("T")[1]}
+        coll.insert_one(game)
+
+
+get_schedule()
 
 
 # Search schedule for games on date and return 2 teams and game id
@@ -134,6 +155,3 @@ def get_ids():
     col2 = con2[DBS_NAME][RATING_COLLECTION]
     for i in ratings:
         col2.update_one({"id": i["id"]}, {"$set": {"rating": i["rating"]}})
-
-
-search_games("5b02025d-33e3-46d4-9251-2ee40753e891")

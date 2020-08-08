@@ -8,6 +8,22 @@
     margin: 4.1rem auto;
 }
 
+.heading{
+    margin: 3.5rem auto;
+}
+
 .top-ten{
     margin-top: 2rem;
 }
+
+.ui-datepicker td a{
+    
+    text-align: center;
+}
+.ui-datepicker{
+    font-size:1.5rem;
+    padding: 1rem;
+    width: 30rem;
+    margin: 3rem auto;
+}
+

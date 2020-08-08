@@ -8,7 +8,7 @@
     </div>
   </div>
 </div>
-<h2>Games on {{ date }}</h2>
+<h2 class="heading">Games on {{ date }}</h2>
 {% if data|length == 0 %}
 <h4>
   Sorry<strong> :( </strong> There do not appear to be any games on that date
@@ -34,6 +34,7 @@
   <br />
 </div>
 <div class="divider"></div>
-{% endfor %} {% endblock %}
+{% endfor %} 
 <br />
 <div class="divider"></div>
+{% endblock %}

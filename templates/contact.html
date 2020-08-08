@@ -13,29 +13,25 @@
   </div>
 </div>
 <div class="row">
-  <form class="col s12">
+  <form class="col s12" id="myform">
     <div class="row">
       <div class="input-field col s6">
         <i class="material-icons prefix">account_circle</i>
-        <input id="first_name" type="text" class="validate" required />
-        <label for="first_name">First Name</label>
-      </div>
-      <div class="input-field col s6">
-        <input id="last_name" type="text" class="validate" required  />
-        <label for="last_name">Last Name</label>
+        <input id="first_name" name="from_name" type="text" class="validate" required />
+        <label for="first_name">Name</label>
       </div>
     </div>
     <div class="row">
       <div class="input-field col s12">
         <i class="material-icons prefix">email</i>
-        <input id="email" type="email" class="validate" required  />
+        <input id="email" type="text" name="reply_to" class="validate" required  />
         <label for="email">Email</label>
       </div>
     </div>
     <div class="row">
       <div class="input-field col s12">
         <i class="material-icons prefix">edit</i>
-        <textarea id="message" class="materialize-textarea" rows="3" required ></textarea>
+        <textarea id="message" class="materialize-textarea" name="message_html" style="height: 100px;" required ></textarea>
         <label for="message">Message</label>
       </div>
     </div>
@@ -46,12 +42,13 @@
           type="submit"
           name="action"
         >
-          Submit
+          Send
           <i class="material-icons right">send</i>
         </button>
       </div>
     </div>
   </form>
 </div>
+
 
 {% endblock %}
