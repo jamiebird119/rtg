@@ -1,11 +1,10 @@
 import os
 import json
 import pymongo
-from flask import Flask, render_template, json, requests, redirect
+from flask import Flask, render_template, json, request, redirect
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from datetime import datetime
-import requests
 if os.path.exists('env.py'):
     import env
 
