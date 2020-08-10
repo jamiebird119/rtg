@@ -1,12 +1,18 @@
 {% extends 'base.html' %} {% block content %}
 <div class="row">
+  
+  <form action="{{ url_for('search_schedule') }}" method="POST">
   <div class="col s12">
-    <div id="testDIV">
-      <div class="container">
-        <div id="pickyDate"></div>
-      </div>
-    </div>
-  </div>
+  
+   <input type="text" class="datepicker" name="date" value="{{ date_old }}">
+   </div>
+   <div class="col s4">
+            <button class="btn waves-effect waves-light" type="submit" name="action">Search 
+            <i class="material-icons right">search</i>
+            </button>
+        </div>
+   </form>
+  
 </div>
 <h2 class="heading">Games on {{ date }}</h2>
 {% if data|length == 0 %}

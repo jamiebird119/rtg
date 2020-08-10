@@ -2,6 +2,7 @@ import os
 import json
 import pymongo
 from flask import Flask, render_template, json, request, redirect
+import requests
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -22,7 +23,8 @@ mongo = PyMongo(app)
 # Home Page with datepicker and top ten games rated
 @app.route('/')
 def index():
-    docs = mongo.db.rating.find(sort=[("rating", pymongo.DESCENDING)], limit=10)
+    docs = mongo.db.rating.find(
+        sort=[("rating", pymongo.DESCENDING)], limit=5)
     top_ten = []
     for i in docs:
         game = mongo.db.schedule.find({"id": i["id"]})
@@ -31,12 +33,36 @@ def index():
                 "rating", str(round(i["rating"])))
             date_string = thing["date"]
             date_obj = datetime.strptime(date_string, "%Y-%m-%d")
-            date = date_obj.strftime("%d %b %Y")
+            date = date_obj.strftime("%b %d %Y")
             top_ten.append({"rating": url,
                             "date": date,
                             "home": thing["home_team"],
                             "away": thing["away_team"]})
-    return render_template("index.html", topTen=top_ten)
+    teams_home = mongo.db.teams.find(
+        sort=[("home_average", pymongo.DESCENDING)], limit=3)
+    top_home = []
+    for doc in teams_home:
+        print(doc)
+        url = "/static/assets/rating.png".replace(
+            "rating", str(round(doc["home_average"])))
+        img = 'static/assets/logos/name.gif'.replace('name', doc["team_short"])
+        top_home.append({"average_rating": url,
+                         "img": img,
+                         "team_name": doc["team_name"]})
+    teams_away = mongo.db.teams.find(
+        sort=[("away_average", pymongo.DESCENDING)], limit=3)
+    top_away = []
+    for doc in teams_away:
+        url = "/static/assets/rating.png".replace(
+            "rating", str(round(doc["away_average"])))
+        img = 'static/assets/logos/name.gif'.replace('name', doc["team_short"])
+        top_away.append({"average_rating": url,
+                         "img": img,
+                         "team_name": doc["team_name"]})
+    return render_template("index.html",
+                           topTen=top_ten,
+                           topHome=top_home,
+                           topAway=top_away)
 
 
 @app.route('/about')
@@ -49,20 +75,22 @@ def contact():
     return render_template("contact.html")
 
 
-@app.route('/search_by_date/<date>', methods=["GET", "POST"])
+@app.route('/search_by_date/', methods=["POST"])
 # Search schedule for games on date and return 2 teams and game id
-def search_schedule(date):
+def search_schedule():
+    date = request.form.get("date")
     search = {"date": date}
     documents = mongo.db.schedule.find(search)
     games = []
     for doc in documents:
-        print(doc)
         games.append({"home": doc["home_team"],
                       "away": doc["away_team"],
                       "id": doc["id"]})
     datetimeobject = datetime.strptime(date, '%Y-%m-%d')
-    newformat = datetimeobject.strftime('%a %d %b %Y')
-    return render_template("date.html", date=newformat, data=games)
+    newformat = datetimeobject.strftime('%a %b %d %Y')
+    return render_template("date.html",
+                           date_old=date,
+                           date=newformat, data=games)
 
 
 # Search database for game data. If not found retrieve from API and save to database
@@ -100,6 +128,60 @@ def search_games(id):
                 return json.dumps([{"rating": "Not Available/Not played"}])
     else:
         return "The data is not available"
+
+
+@app.route('/teams')
+def teams():
+    return render_template('teams.html')
+
+
+@app.route('/search_teams', methods=["POST"])
+def search_teams():
+    team_name = request.form.get("team")
+    team = request.form.get("team").split(" ")
+    home = mongo.db.game_data.find({'home.name': team[(len(team)-1)]})
+    away = mongo.db.game_data.find({'away.name': team[(len(team)-1)]})
+    data_home = []
+    home_ratings = []
+    for item in home:
+        home_ratings.append(mongo.db.rating.find({"id": item["game_id"]}))
+    for i in home_ratings:
+        for u in i:
+            data_home.append(u["rating"])
+    away_ratings = []
+    data_away = []
+    for item in away:
+        away_ratings.append(mongo.db.rating.find({"id": item["game_id"]}))
+    for i in away_ratings:
+        for u in i:
+            data_away.append(u["rating"])
+    data = {"team_name": team_name,
+            "team_short": team[(len(team)-1)],
+            "home_ratings": data_home,
+            "away_ratings": data_away}
+    if len(data_home) > 0:
+        home_average = sum(data_home)/len(data_home)
+    else:
+        home_average = 0
+
+    if len(data_away) > 0:
+        away_average = sum(data_away)/len(data_away)
+    else:
+        away_average = 0
+    database = {"team_name": team_name,
+                "team_short": team[(len(team)-1)],
+                "home_ratings": data_home,
+                "away_ratings": data_away,
+                "games_rated": len(data_home) + len(data_away),
+                "home_average": home_average,
+                "away_average": away_average}
+    if mongo.db.teams.find_one({"team_name": team_name}):
+        mongo.db.teams.find_one_and_update(
+            {"team_name": database["team_name"]}, {"$set": database})
+        return render_template("teams.html", team_data=data)
+    else:
+        mongo.db.teams.insert_one(database)
+        return render_template("teams.html", team_data=data)
 
 
 if __name__ == '__main__':
