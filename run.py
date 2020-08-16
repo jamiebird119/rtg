@@ -155,7 +155,7 @@ def return_team(team_name):
     }
     response = requests.request(
         "GET", url, headers=headers, params=querystring)
-    standings = response
+    standings = response.json()
     return render_template("teams.html",
                            team_data=mongo.db.teams.find_one({
                                'team_name': team_name}),
@@ -170,6 +170,15 @@ def search_teams():
     away = mongo.db.game_data.find({'away.name': team[(len(team)-1)]})
     data_home = []
     home_ratings = []
+    url = "https://api-basketball.p.rapidapi.com/standings"
+    querystring = {"league": "12", "season": "2019-2020"}
+    headers = {
+        'x-rapidapi-host': "api-basketball.p.rapidapi.com",
+        'x-rapidapi-key': "0a76bdc434msh890d7aed4a26f66p14aafejsnee71a10023f1"
+    }
+    response = requests.request(
+        "GET", url, headers=headers, params=querystring)
+    standings = response.json()
     for item in home:
         home_ratings.append(mongo.db.rating.find({"id": item["game_id"]}))
     for i in home_ratings:
@@ -205,10 +214,12 @@ def search_teams():
     if mongo.db.teams.find_one({"team_name": team_name}):
         mongo.db.teams.find_one_and_update(
             {"team_name": database["team_name"]}, {"$set": database})
-        return render_template("teams.html", team_data=data)
+        return render_template("teams.html", team_data=data,
+                               standings=standings)
     else:
         mongo.db.teams.insert_one(database)
-        return render_template("teams.html", team_data=data)
+        return render_template("teams.html", team_data=data,
+                               standings=standings)
 
 
 if __name__ == '__main__':
