@@ -6,7 +6,7 @@
         <div class="input-field col s8">
           <i class="material-icons prefix">textsms</i>
           <input type="text" id="autocomplete-input" class="autocomplete" name="team">
-          <label for="autocomplete-input">Autocomplete</label>
+          <label for="autocomplete-input">Search for a Team</label>
         </div>
         <div class="col s4">
             <button class="btn waves-effect waves-light" type="submit" name="action">Search 
@@ -15,6 +15,30 @@
         </div>
     </form>
     </div>
+  </div>
+  <div class="row">
+  <table> 
+  <tr>
+  <th>Name</th>
+  <th>Logo</th>
+  <th>Played</th>
+  <th>Win</th>
+  <th>Loss</th>
+  <th>Points For</th>
+  <th>Points Against</th>
+  </tr>
+  {% for item in standings.response.0 %}
+  <tr>
+  <td>{{ item.team.name }}</td>
+  <td><img src="{{ item.team.logo }}"alt="{{ item.team.name }}"/></td>
+  <td>{{ item.games.played}}</td>
+  <td>{{ item.games.win.total}}</td>
+  <td>{{ item.games.lose.total}}</td>
+  <td>{{ item.points.for}}</td>
+  <td>{{ item.points.against}}</td>
+  <tr>
+  {% endfor %}
+  </table>
   </div>
   <div class="row">
     <div class="col">

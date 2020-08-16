@@ -1,6 +1,7 @@
 import os
 import json
 import pymongo
+import requests
 from flask import Flask, render_template, json, request, redirect
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
@@ -14,12 +15,13 @@ app = Flask(__name__)
 app.config["MONGO_DBNAME"] = os.environ.get("MONGO_DBNAME")
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 api_key = os.environ.get("api_key")
+api_key_2 = os.environ.get("api_key_2")
 
 
 mongo = PyMongo(app)
 
 
-# Home Page with datepicker and top ten games rated
+# Home Page with datepicker and top five games rated
 @app.route('/')
 def index():
     docs = mongo.db.rating.find(
@@ -131,7 +133,33 @@ def search_games(id):
 
 @app.route('/teams')
 def teams():
-    return render_template('teams.html')
+    url = "https://api-basketball.p.rapidapi.com/standings"
+    querystring = {"league": "12", "season": "2019-2020"}
+    headers = {
+        'x-rapidapi-host': "api-basketball.p.rapidapi.com",
+        'x-rapidapi-key': "0a76bdc434msh890d7aed4a26f66p14aafejsnee71a10023f1"
+    }
+    response = requests.request(
+        "GET", url, headers=headers, params=querystring)
+    standings = response.json()
+    return render_template('teams.html', standings=standings)
+
+
+@app.route('/return_team/<team_name>')
+def return_team(team_name):
+    url = "https://api-basketball.p.rapidapi.com/standings"
+    querystring = {"league": "12", "season": "2019-2020"}
+    headers = {
+        'x-rapidapi-host': "api-basketball.p.rapidapi.com",
+        'x-rapidapi-key': "0a76bdc434msh890d7aed4a26f66p14aafejsnee71a10023f1"
+    }
+    response = requests.request(
+        "GET", url, headers=headers, params=querystring)
+    standings = response
+    return render_template("teams.html",
+                           team_data=mongo.db.teams.find_one({
+                               'team_name': team_name}),
+                           standings=standings)
 
 
 @app.route('/search_teams', methods=["POST"])

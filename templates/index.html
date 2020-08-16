@@ -31,37 +31,47 @@
     <img src="{{i.rating}}"/>
     </div>
     <div class="col s12 divider"></div>
-    
-    
     {% endfor %}
   </div>
-    <div class="row">
-    <div class="col s12">
+
     <h4> Top 3 Rated Teams @ Home </h4>
-    <ol>
+    <ul>
     {% for team in topHome %}
     <li>
-    <h5> {{ team.team_name }} </h5>
-    <img src="{{ team.img }}"/>
-    <p> Average Home Rating </p>
-    <img src="{{ team.average_rating }}"/>
-    </li>
-    {% endfor %}
-    </div>
-    </div>
-
     <div class="row">
     <div class="col s12">
-    <h4> Top 3 Rated Teams on the Road</h4>
-    <ol>
-    {% for team in topAway %}
-    <li>
-    <h5> {{ team.team_name }} </h5>
+    <a href="{{ url_for('return_team',team_name=team.team_name)}}"><h6>{{ loop.index }})  {{ team.team_name }} </h6> </a> 
+    </div>
+    <div class="col s4">
     <img src="{{ team.img }}"/>
-    <p> Average Away Rating </p>
+    </div>
+    <div class="col s4">
+    <p> Average Home Rating </p>
     <img src="{{ team.average_rating }}"/>
+    </div>
+    </div>  
     </li>
     {% endfor %}
+    </ul>
+   
+   
+    <h4> Top 3 Rated Teams on the Road</h4>
+    <ul>
+    {% for team in topAway %}
+    <li>
+    <div class="row">
+    <div class="col s12">
+    <a href="{{ url_for('return_team',team_name=team.team_name)}}"> <h6>{{ loop.index }}) {{ team.team_name }}</h6> </a> 
+    </div>
+    <div class="col s4">
+    <img src="{{ team.img }}"/>
+    </div>
+    <div class="col s4">
+    <p> Average Away Rating </p>
+    <img src="{{ team.average_rating }}"/>
     </div>
     </div>
+    </li>
+    {% endfor %}
+    </ul>
 {% endblock %}
